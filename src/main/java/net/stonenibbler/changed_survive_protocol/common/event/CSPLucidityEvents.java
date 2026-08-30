@@ -69,10 +69,8 @@ public final class CSPLucidityEvents {
                 recovery += CSPConfig.COMMON.lucidityRecoveryAquaticUnderwater.get();
 
                 population = countAquaticTransfurs(player.level(), player.blockPosition(), player, !isOrganic(strand));
-                System.out.println("Amount of friendlies (water): " + population + "\n");
             } else if (landAbovewater) {
                 population = countLandTransfurs(player.level(), player.blockPosition(), player, !isOrganic(strand));
-                System.out.println("Amount of friendlies (land): " + population + "\n");
             }
 
             nearTransfurredCrowd = population >= SMALL_TRANSFURRED_COUNT;
