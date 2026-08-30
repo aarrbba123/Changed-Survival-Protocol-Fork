@@ -33,9 +33,9 @@ public final class CSPLucidityEvents {
     private static final int LARGE_LATEX_COUNT = 16;
     private static final int NEST_LATEX_COUNT = 12;
 
-    private static final int SMALL_TRANSFURRED_COUNT = 1;
-    private static final int MEDIUM_TRANSFURRED_COUNT = 4;
-    private static final int LARGE_TRANSFURRED_COUNT = 8; // large crowds
+    private static final int SMALL_TRANSFURRED_COUNT = 2;
+    private static final int MEDIUM_TRANSFURRED_COUNT = 6;
+    private static final int LARGE_TRANSFURRED_COUNT = 12; // large crowds
 
     private CSPLucidityEvents() {
     }
@@ -69,11 +69,13 @@ public final class CSPLucidityEvents {
                 recovery += CSPConfig.COMMON.lucidityRecoveryAquaticUnderwater.get();
 
                 population = countAquaticTransfurs(player.level(), player.blockPosition(), player, !isOrganic(strand));
+                System.out.println("Amount of friendlies (water): " + population + "\n");
             } else if (landAbovewater) {
                 population = countLandTransfurs(player.level(), player.blockPosition(), player, !isOrganic(strand));
+                System.out.println("Amount of friendlies (land): " + population + "\n");
             }
 
-            nearTransfurredCrowd = population >= SMALL_LATEX_COUNT;
+            nearTransfurredCrowd = population >= SMALL_TRANSFURRED_COUNT;
             if (nearTransfurredCrowd) {
                 recovery += population >= LARGE_TRANSFURRED_COUNT
                 ? CSPConfig.COMMON.lucidityRecoveryNearTransfurredLarge.get()
@@ -208,9 +210,20 @@ public final class CSPLucidityEvents {
             Mob.class,
             area, 
             mob -> mob.isAlive() 
-            && LatexStrandManager.isSociallyFriendly(LatexStrandManager.resolve(mob).orElse(null), LatexStrandManager.resolve(player).orElse(null))
+            && isValidAquaticTransfur(mob, player)
             && (isLatex ? LatexStrandManager.isSociallyFriendly(mob, player) : true)
             ).size();
+    }
+
+    private static boolean isValidAquaticTransfur(Mob mob, ServerPlayer player) {
+        LatexStrandManager.Strand mobStrand = LatexStrandManager.resolve(mob).orElse(null);
+        LatexStrandManager.Strand playerStrand = LatexStrandManager.resolve(player).orElse(null);
+
+        if (mobStrand == null || playerStrand == null) {
+            return false;
+        }
+
+        return LatexStrandManager.isSociallyFriendly(mobStrand, playerStrand);
     }
 
     private static int countFriendlyLatex(Level level, BlockPos center, LatexType playerType, int xzRange, int downRange, int upRange) {
