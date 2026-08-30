@@ -72,6 +72,10 @@ public final class CSPConfig {
         public final ForgeConfigSpec.DoubleValue lucidityRecoveryAquaticUnderwater;
         public final ForgeConfigSpec.DoubleValue lucidityRecoveryFromLatexNestSleep;
         public final ForgeConfigSpec.DoubleValue lucidityRecoveryFromAssimilation;
+        public final ForgeConfigSpec.DoubleValue lucidityRecoveryNearTransfurredSmall;
+        public final ForgeConfigSpec.DoubleValue lucidityRecoveryNearTransfurredMedium;
+        public final ForgeConfigSpec.DoubleValue lucidityRecoveryNearTransfurredLarge;
+        public final ForgeConfigSpec.IntValue transfurredCheckRadius;
         public final ForgeConfigSpec.DoubleValue stabilizationRequiredLucidity;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> lucidityBlacklistEntityTypes;
 
@@ -137,9 +141,13 @@ public final class CSPConfig {
             lucidityRecoveryAquaticUnderwater = builder.comment("Lucidity restored per latex need interval while an aquatic latex form is underwater.").defineInRange("lucidityRecoveryAquaticUnderwater", 0.5D, 0.0D, 100.0D);
             lucidityRecoveryFromLatexNestSleep = builder.comment("Lucidity restored when waking after sleeping long enough in a friendly latex nest.").defineInRange("lucidityRecoveryFromLatexNestSleep", 25.0D, 0.0D, 100.0D);
             lucidityRecoveryFromAssimilation = builder.comment("Lucidity restored when a latex player successfully assimilates/transfurs another entity.").defineInRange("lucidityRecoveryFromAssimilation", 20.0D, 0.0D, 100.0D);
+            lucidityRecoveryNearTransfurredSmall = builder.comment("Lucidity restored per latex need interval near a small number of friendly transfurred entities").defineInRange("lucidityRecoveryNearTransfurredSmall", 0.3D, 0.0D, 100.0D);
+            lucidityRecoveryNearTransfurredMedium = builder.comment("Lucidity restored per latex need interval near a medium number of friendly transfurred entities").defineInRange("lucidityRecoveryNearTransfurredMedium", 0.5D, 0.0D, 100.0D);
+            lucidityRecoveryNearTransfurredLarge = builder.comment("Lucidity restored per latex need interval near a large number of friendly transfurred entities").defineInRange("lucidityRecoveryNearTransfurredLarge", 0.75D, 0.0D, 100.0D);
+            transfurredCheckRadius = builder.comment("Radius checked for lucidityRecoveryNearTransfurred").defineInRange("transfurredCheckRadius", 48, 1, 256);
             culturedStrandNestAttunement = builder.comment("Attunement added to a carried matching cultured strand when sleeping in a friendly latex nest.").defineInRange("culturedStrandNestAttunement", 40.0D, 0.0D, 100.0D);
             culturedStrandAssimilationAttunement = builder.comment("Attunement added to a carried matching cultured strand after successful assimilation.").defineInRange("culturedStrandAssimilationAttunement", 25.0D, 0.0D, 100.0D);
-            culturedStrandPassiveAttunement = builder.comment("Attunement added once per minute to a carried matching cultured strand while lucid near friendly latex.").defineInRange("culturedStrandPassiveAttunement", 1.0D, 0.0D, 100.0D);
+            culturedStrandPassiveAttunement = builder.comment("Attunement added once per minute to a carried matching cultured strand while lucid near friendly latex or transfurred entities.").defineInRange("culturedStrandPassiveAttunement", 1.0D, 0.0D, 100.0D);
             stabilizationRequiredLucidity = builder.comment("Minimum lucidity required to consume a stabilization dose.").defineInRange("stabilizationRequiredLucidity", 80.0D, 0.0D, 100.0D);
             builder.comment("Blacklist lucidity. Acceptable formats: \"@modid\", \"#tag\", \"modid:entity_id\"");
             lucidityBlacklistEntityTypes = builder.defineList("lucidityBlacklistEntityTypes", List.of("#changed_survive_protocol:lucidity_blacklist"), RegistryElementPredicate::isValidSyntax);

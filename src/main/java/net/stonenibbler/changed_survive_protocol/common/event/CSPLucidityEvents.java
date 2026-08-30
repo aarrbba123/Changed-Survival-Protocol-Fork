@@ -2,7 +2,7 @@ package net.stonenibbler.changed_survive_protocol.common.event;
 
 import net.ltxprogrammer.changed.ability.IAbstractChangedEntity;
 import net.ltxprogrammer.changed.entity.latex.LatexType;
-import net.ltxprogrammer.changed.process.ProcessTransfur;
+import net.ltxprogrammer.changed.init.ChangedTags;
 import net.ltxprogrammer.changed.process.TransfurEvents;
 import net.ltxprogrammer.changed.world.LatexCoverState;
 import net.minecraft.core.BlockPos;
@@ -10,11 +10,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.stonenibbler.changed_survive_protocol.common.config.CSPConfig;
 import net.stonenibbler.changed_survive_protocol.common.data.CSPCapabilities;
@@ -31,6 +33,10 @@ public final class CSPLucidityEvents {
     private static final int LARGE_LATEX_COUNT = 16;
     private static final int NEST_LATEX_COUNT = 12;
 
+    private static final int SMALL_TRANSFURRED_COUNT = 1;
+    private static final int MEDIUM_TRANSFURRED_COUNT = 4;
+    private static final int LARGE_TRANSFURRED_COUNT = 8; // large crowds
+
     private CSPLucidityEvents() {
     }
 
@@ -41,6 +47,7 @@ public final class CSPLucidityEvents {
 
         boolean dirty = false;
         boolean nearFriendlyLatex = false;
+        boolean nearTransfurredCrowd = false;
         double recovery = 0.0D;
         LatexStrandManager.Strand strand = LatexStrandManager.resolve(player).orElse(null);
         if (strand != null) {
@@ -54,8 +61,25 @@ public final class CSPLucidityEvents {
                         ? CSPConfig.COMMON.lucidityRecoveryNearLatexMedium.get()
                         : CSPConfig.COMMON.lucidityRecoveryNearLatexSmall.get();
             }
+
+            boolean landAbovewater = strand.family() != LatexStrandManager.Family.AQUATIC && !player.isEyeInFluid(FluidTags.WATER);
+            int population = 0;
+            // Check if underwater and aquatic, or above water and not aquatic
             if (aquaticUnderwater) {
                 recovery += CSPConfig.COMMON.lucidityRecoveryAquaticUnderwater.get();
+
+                population = countAquaticTransfurs(player.level(), player.blockPosition(), player, !isOrganic(strand));
+            } else if (landAbovewater) {
+                population = countLandTransfurs(player.level(), player.blockPosition(), player, !isOrganic(strand));
+            }
+
+            nearTransfurredCrowd = population >= SMALL_LATEX_COUNT;
+            if (nearTransfurredCrowd) {
+                recovery += population >= LARGE_TRANSFURRED_COUNT
+                ? CSPConfig.COMMON.lucidityRecoveryNearTransfurredLarge.get()
+                : population >= MEDIUM_TRANSFURRED_COUNT
+                ? CSPConfig.COMMON.lucidityRecoveryNearTransfurredMedium.get()
+                : CSPConfig.COMMON.lucidityRecoveryNearTransfurredSmall.get();
             }
         }
 
@@ -65,9 +89,10 @@ public final class CSPLucidityEvents {
             dirty = true;
         }
 
-        if (nearFriendlyLatex && data.getLucidity() >= 70.0D && player.tickCount % 1200 == 0) {
+        if ((nearTransfurredCrowd || nearFriendlyLatex) && data.getLucidity() >= 70.0D && player.tickCount % 1200 == 0) {
             dirty |= attuneCarriedCulturedStrands(player, CSPConfig.COMMON.culturedStrandPassiveAttunement.get());
         }
+
         return dirty;
     }
 
@@ -148,6 +173,44 @@ public final class CSPLucidityEvents {
             center = state.getValue(BedBlock.PART) == net.minecraft.world.level.block.state.properties.BedPart.HEAD ? bedPos.relative(facing.getOpposite()) : bedPos;
         }
         return countFriendlyLatex(level, center, playerType, 2, 1, 2) >= NEST_LATEX_COUNT;
+    }
+
+    private static boolean isOrganic(LatexStrandManager.Strand strand) {
+        return strand.family() == LatexStrandManager.Family.INDEPENDENT || strand.family() == LatexStrandManager.Family.UNKNOWN;
+    }
+
+    private static int countLandTransfurs(Level level, BlockPos center, ServerPlayer player, boolean isLatex) {
+        int radius = Math.max(1, CSPConfig.COMMON.transfurredCheckRadius.get());
+        AABB area = new AABB(center).inflate(radius);
+        return level.getEntitiesOfClass(
+            Mob.class, 
+            area, 
+            mob -> mob.isAlive() 
+            && isValidLandTransfur(mob)
+            && (isLatex ? LatexStrandManager.isSociallyFriendly(mob, player) : true) // Still perform the check when latex
+        ).size();
+    }
+
+    // Unlike aquatic-based organics (which is in the AQUATIC family), land-based organics will probably be in the INDEPENDENT family (which has a more stricter same-strain check).
+    // We don't want that, as organics (both land & aquatic) are already hard to find in-game, let alone ones with the same strain as the player.
+    private static boolean isValidLandTransfur(Mob mob) {
+        LatexStrandManager.Strand strand = LatexStrandManager.resolve(mob).orElse(null);
+        if (strand == null || strand.family() == LatexStrandManager.Family.AQUATIC) {
+            return false;
+        }
+        return true;
+    }
+
+    private static int countAquaticTransfurs(Level level, BlockPos center, ServerPlayer player, boolean isLatex) {
+        int radius = Math.max(1, CSPConfig.COMMON.transfurredCheckRadius.get());
+        AABB area = new AABB(center).inflate(radius);
+        return level.getEntitiesOfClass(
+            Mob.class,
+            area, 
+            mob -> mob.isAlive() 
+            && LatexStrandManager.isSociallyFriendly(LatexStrandManager.resolve(mob).orElse(null), LatexStrandManager.resolve(player).orElse(null))
+            && (isLatex ? LatexStrandManager.isSociallyFriendly(mob, player) : true)
+            ).size();
     }
 
     private static int countFriendlyLatex(Level level, BlockPos center, LatexType playerType, int xzRange, int downRange, int upRange) {
