@@ -1,5 +1,5 @@
-This is the repository for the mod **Changed-Survival-Protocol**.
-The mod is currently on version **1.2.0** and requires Changed-Minecraft-Mod version **0.15.4+**.
+This is a **fork** for the repository of the mod **Changed-Survival-Protocol**.
+The mod is currently on version **1.3.0** and requires Changed-Minecraft-Mod version **0.15.4+**.
 
 ## How can I compile the mod?
 
@@ -19,7 +19,7 @@ When `Infection` reaches 100, you will transfur.
 
 This adds a way to survive and avoid a transfur in survival. Instead of instantly die / transfurring, you go through an infection phase first.  
 
-While you have `Coverage`, you can enter a body of water to quickly lower your `Coverage.`  
+While you have `Coverage`, you can enter a body of water to quickly lower your `Coverage`.  
 While you have `Infection`, you can attempt to cure yourself with a dedicated cure gameplay loop.  
 
 ### Latex Infestations
