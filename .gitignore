@@ -15,3 +15,9 @@ src/test
 
 # Ignore macOS .DS_Store
 .DS_Store
+
+# Ignore eclipse/vscode artifacts
+/bin
+
+# Ignore vscode directories
+.vscode
