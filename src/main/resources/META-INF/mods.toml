@@ -8,6 +8,7 @@ version="${file.jarVersion}"
 displayName="Changed: Survive Protocol"
 authors="stonenibbler"
 description='''Survival-focused systems for Changed: Minecraft Mod.'''
+logoFile="logo.png"
 
 [[dependencies.changed_survive_protocol]]
     modId="forge"
