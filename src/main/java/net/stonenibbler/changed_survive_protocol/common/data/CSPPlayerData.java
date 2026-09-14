@@ -85,12 +85,13 @@ public class CSPPlayerData {
 
     private ListTag saveStrainIds() {
         ListTag tag = new ListTag();
-        for (HashMap.Entry<String, CSPPlayerInfectionEntry> entry : strainIds.entrySet()) {
-            CompoundTag ctag = entry.getValue().save();
-            ctag.putString("strainId", entry.getKey());
-            
+
+        strainIds.forEach((key, entry) -> {
+            CompoundTag ctag = entry.save();
+            ctag.putString("strainId", key);
+
             tag.add(ctag);
-        }
+        });
 
         return tag;
     }
@@ -208,11 +209,10 @@ public class CSPPlayerData {
             strainIds.put(strainId, new CSPPlayerInfectionEntry());     
         }
 
-        for (Map.Entry<String, CSPPlayerInfectionEntry> mapEntry : strainIds.entrySet()) {
-            CSPPlayerInfectionEntry curEntry = mapEntry.getValue();
-            curEntry.updateInfectionPercentage(amount, oldTotal, mapEntry.getKey() == strainId);
-            strainIds.put(strainId, curEntry);
-        }
+        strainIds.forEach((key, entry) -> {
+            entry.updateInfectionPercentage(amount, oldTotal, key.equals(strainId));
+            strainIds.put(key, entry);
+        });
     }
 
     public double getCoverage() {
@@ -241,11 +241,10 @@ public class CSPPlayerData {
             strainIds.put(strainId, new CSPPlayerInfectionEntry());     
         }
 
-        for (Map.Entry<String, CSPPlayerInfectionEntry> mapEntry : strainIds.entrySet()) {
-            CSPPlayerInfectionEntry curEntry = mapEntry.getValue();
-            curEntry.updateCoveragePercentage(amount, oldTotal, mapEntry.getKey() == strainId);
-            strainIds.put(strainId, curEntry);
-        }
+        strainIds.forEach((key, entry) -> {
+            entry.updateCoveragePercentage(amount, oldTotal, key.equals(strainId));
+            strainIds.put(key, entry);
+        });
     }
 
     public boolean isInfected() {

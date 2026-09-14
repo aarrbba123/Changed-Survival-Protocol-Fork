@@ -1,5 +1,5 @@
 This is a **fork** for the repository of the mod **Changed-Survival-Protocol**.
-The mod is currently on version **1.3.0** and requires Changed-Minecraft-Mod version **0.15.4+**.
+This fork of the mod is currently on version **1.3.0-fork13** and requires Changed-Minecraft-Mod version **0.15.4+**.
 
 ## How can I compile the mod?
 

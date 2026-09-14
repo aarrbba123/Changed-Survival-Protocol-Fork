@@ -10,7 +10,10 @@ public class CSPPlayerInfectionEntry {
         return Math.min(Math.max(rawPercent, 0.0D), 100.0D);
     }
 
-    public CSPPlayerInfectionEntry() {}
+    public CSPPlayerInfectionEntry() {
+        this.infection = 0.0D;
+        this.coverage = 0.0D;
+    }
 
     // Convinience constructor used to load directly from a save
     public CSPPlayerInfectionEntry(CompoundTag tag) {
@@ -30,7 +33,6 @@ public class CSPPlayerInfectionEntry {
     // total is total WITHOUT added, in percent
     // isAdded is a bool
     private static double percentCalc(double value, double added, double total, boolean isAdded) {
-        System.out.println("DEBUG: v=" + value + ", a=" + added + ", t=" + total + ", ia?=" + (isAdded ? "yes" : "no"));
         double currentPrescense = total * (value / 100);
         if (isAdded) {
             currentPrescense += added;
@@ -72,5 +74,10 @@ public class CSPPlayerInfectionEntry {
     public void load(CompoundTag tag) {
         this.coverage = tag.getDouble("coverage");
         this.infection = tag.getDouble("infection");
+    }
+
+    @Override
+    public String toString() {
+        return "Coverage: " + this.coverage + " Infection: " + this.infection;
     }
 }
