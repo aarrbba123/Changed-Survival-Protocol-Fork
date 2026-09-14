@@ -288,7 +288,7 @@ public class CSPPlayerData {
     public void setActiveStrainId(String strainId) {
         // Replace the whole tf table with the active strain
         strainIds.clear();
-        if (strainId == null)
+        if (strainId == null || strainId.isBlank())
             return;
 
         strainIds.put(strainId, getAbsoluteStrain());

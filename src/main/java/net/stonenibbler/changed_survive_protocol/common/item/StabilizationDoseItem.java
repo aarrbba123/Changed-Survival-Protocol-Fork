@@ -60,7 +60,7 @@ public class StabilizationDoseItem extends StrainTaggedItem {
             }
             String strainId = CSPStrainItems.strainId(stack);
             data.setSettledStrainId(strainId);
-            data.setStrainId(strainId);
+            data.setActiveStrainId(strainId);
             data.setStabilizedLatex(true);
             data.setLucidityActive(false);
             data.setUnstableLatex(false);

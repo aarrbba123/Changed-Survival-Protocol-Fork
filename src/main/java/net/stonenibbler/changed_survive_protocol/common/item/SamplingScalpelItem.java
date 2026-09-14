@@ -46,11 +46,11 @@ public class SamplingScalpelItem extends Item {
 
         final boolean[] used = {false};
         CSPCapabilities.get(serverPlayer).ifPresent(data -> {
-            if (!data.isInfected() || data.getStrainId().isBlank()) {
+            if (!data.isInfected() || data.getActiveStrainId().isBlank()) {
                 player.displayClientMessage(Component.translatable("message.changed_survive_protocol.scalpel.no_strain"), true);
                 return;
             }
-            String strainId = data.getStrainId();
+            String strainId = data.getActiveStrainId();
             float configuredDamage = CSPConfig.COMMON.sampleExtractionDamage.get().floatValue();
             if (configuredDamage > 0.0F) {
                 float minHealth = CSPConfig.COMMON.sampleExtractionMinHealth.get().floatValue();

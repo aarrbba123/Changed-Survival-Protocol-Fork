@@ -52,14 +52,14 @@ public class StrandCureDoseItem extends StrainTaggedItem {
                 player.displayClientMessage(Component.translatable("message.changed_survive_protocol.cure.no_infection"), true);
                 return;
             }
-            if (!doseStrain.equals(data.getStrainId())) {
+            if (!doseStrain.equals(data.getActiveStrainId())) {
                 player.displayClientMessage(Component.translatable("message.changed_survive_protocol.cure.wrong_strain"), true);
                 return;
             }
             data.setSuppressantTicks(Math.max(data.getSuppressantTicks(), CSPConfig.COMMON.cureDoseSuppressantTicks.get()));
             data.setInfectionPercent(data.getInfectionPercent() - CSPConfig.COMMON.cureDoseInfectionRemoval.get());
             if (!data.isInfected()) {
-                data.setStrainId("");
+                data.setActiveStrainId("");
                 data.setSuppressantTicks(0);
             }
             CSPNetwork.sync(serverPlayer, data);

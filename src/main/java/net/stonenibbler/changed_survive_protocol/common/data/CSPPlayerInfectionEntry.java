@@ -25,7 +25,12 @@ public class CSPPlayerInfectionEntry {
         this.coverage = clampPercent(coverage);
     }
 
+    // value is current value, in percent
+    // added is amount added, in percent
+    // total is total WITHOUT added, in percent
+    // isAdded is a bool
     private static double percentCalc(double value, double added, double total, boolean isAdded) {
+        System.out.println("DEBUG: v=" + value + ", a=" + added + ", t=" + total + ", ia?=" + (isAdded ? "yes" : "no"));
         double currentPrescense = total * (value / 100);
         if (isAdded) {
             currentPrescense += added;

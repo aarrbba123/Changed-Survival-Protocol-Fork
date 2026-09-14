@@ -382,7 +382,7 @@ public final class CSPTransfurEvents {
                         data.addInfection(overflow * CSPConfig.COMMON.infectionFromExtraCoverageMultiplier.get(), strainId);
                     }
                 } else {
-                    data.setCoverage(totalCoverage);
+                    data.addCoverage(amount, strainId);
                 }
             }
 
