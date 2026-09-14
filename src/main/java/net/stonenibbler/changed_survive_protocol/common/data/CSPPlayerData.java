@@ -101,7 +101,7 @@ public class CSPPlayerData {
         tag.putDouble("coverage", coverage);
         tag.putBoolean("infected", infected);
         tag.put("strainIds", saveStrainIds());
-        tag.putString("strainId", getStrainId()); // In case of reversion, we just place the active strain id here, too.
+        tag.putString("strainId", getActiveStrainId()); // For backwards-compatibility, we just place the active strain id here, too.
         tag.putInt("suppressantTicks", suppressantTicks);
         tag.putDouble("lucidity", lucidity);
         tag.putBoolean("lucidityActive", lucidityActive);
@@ -200,11 +200,18 @@ public class CSPPlayerData {
     }
 
     public void addInfection(double amount, String strainId) {
+        double oldTotal = infectionPercent;
         setInfectionPercent(infectionPercent + amount);
-        if (strainId.isBlank()) return;
-        // TODO: Infection handling
-        if (!strainIds.containsKey(strainId)) {
+        if (strainId == null || strainId.isBlank() || amount == 0) return;
 
+        if (!strainIds.containsKey(strainId)) {
+            strainIds.put(strainId, new CSPPlayerInfectionEntry());     
+        }
+
+        for (Map.Entry<String, CSPPlayerInfectionEntry> mapEntry : strainIds.entrySet()) {
+            CSPPlayerInfectionEntry curEntry = mapEntry.getValue();
+            curEntry.updateInfectionPercentage(amount, oldTotal, mapEntry.getKey() == strainId);
+            strainIds.put(strainId, curEntry);
         }
     }
 
@@ -226,9 +233,19 @@ public class CSPPlayerData {
     }
 
     public void addCoverage(double amount, String strainId) {
+        double oldTotal = coverage;
         setCoverage(coverage + amount);
-        if (strainId.isBlank()) return;
-        // TODO: Coverage handling
+        if (strainId == null || strainId.isBlank() || amount == 0) return;
+        
+        if (!strainIds.containsKey(strainId)) {
+            strainIds.put(strainId, new CSPPlayerInfectionEntry());     
+        }
+
+        for (Map.Entry<String, CSPPlayerInfectionEntry> mapEntry : strainIds.entrySet()) {
+            CSPPlayerInfectionEntry curEntry = mapEntry.getValue();
+            curEntry.updateCoveragePercentage(amount, oldTotal, mapEntry.getKey() == strainId);
+            strainIds.put(strainId, curEntry);
+        }
     }
 
     public boolean isInfected() {

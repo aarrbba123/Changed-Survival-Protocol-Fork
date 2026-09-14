@@ -2,7 +2,6 @@ package net.stonenibbler.changed_survive_protocol.common.event;
 
 import net.ltxprogrammer.changed.ability.IAbstractChangedEntity;
 import net.ltxprogrammer.changed.entity.latex.LatexType;
-import net.ltxprogrammer.changed.init.ChangedTags;
 import net.ltxprogrammer.changed.process.TransfurEvents;
 import net.ltxprogrammer.changed.world.LatexCoverState;
 import net.minecraft.core.BlockPos;
@@ -40,6 +39,7 @@ public final class CSPLucidityEvents {
     private CSPLucidityEvents() {
     }
 
+    @SuppressWarnings("deprecation")
     public static boolean tickLatexEnvironment(ServerPlayer player, CSPPlayerData data, double lucidityDrain) {
         if (!CSPTransfurState.usesLucidity(player, data) || player.tickCount % CSPConfig.COMMON.latexNeedIntervalTicks.get() != 0) {
             return false;

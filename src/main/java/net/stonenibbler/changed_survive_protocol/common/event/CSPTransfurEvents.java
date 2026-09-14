@@ -157,7 +157,7 @@ public final class CSPTransfurEvents {
         try {
             CSPCapabilities.get(player).ifPresent(data -> {
                 if (event.newVariant != null) {
-                    data.setStrainId(event.newVariant.getFormId().toString());
+                    data.setActiveStrainId(event.newVariant.getFormId().toString()); // Totems will just override everything, lol.
                     if (consumePendingTotemForm(player, event.newVariant)) {
                         data.setTotemFormId(event.newVariant.getFormId().toString());
                     } else if (data.hasTotemForm() && !data.getTotemFormId().equals(event.newVariant.getFormId().toString())) {
@@ -195,7 +195,7 @@ public final class CSPTransfurEvents {
             ProcessTransfur.removePlayerTransfurVariant(player);
         }
 
-        TransfurVariant<?> variant = resolveVariant(data.getStrainId());
+        TransfurVariant<?> variant = resolveVariant(data.getActiveStrainId());
         ALLOWED_IMMEDIATE_TRANSFURS.add(player.getUUID());
         try {
             ProcessTransfur.transfur(player, ImmediateTransfurDecision.safe(variant, TransfurCause.DEFAULT, changedEntity -> {
@@ -368,12 +368,8 @@ public final class CSPTransfurEvents {
 
     private static void addExposure(ServerPlayer player, String strainId, double amount) {
         CSPCapabilities.get(player).ifPresent(data -> {
-            if (!strainId.isBlank()) {
-                data.setStrainId(strainId);
-            }
-
             if (data.isInfected()) {
-                data.addInfection(amount * CSPConfig.COMMON.infectionFromExtraCoverageMultiplier.get());
+                data.addInfection(amount * CSPConfig.COMMON.infectionFromExtraCoverageMultiplier.get(), strainId);
                 data.setCoverage(0.0D);
             } else {
                 double totalCoverage = data.getCoverage() + amount;
@@ -383,7 +379,7 @@ public final class CSPTransfurEvents {
                     data.setCoverage(0.0D);
                     data.setInfectionPercent(Math.max(1.0D, CSPConfig.COMMON.infectionStartPercent.get()));
                     if (overflow > 0.0D) {
-                        data.addInfection(overflow * CSPConfig.COMMON.infectionFromExtraCoverageMultiplier.get());
+                        data.addInfection(overflow * CSPConfig.COMMON.infectionFromExtraCoverageMultiplier.get(), strainId);
                     }
                 } else {
                     data.setCoverage(totalCoverage);

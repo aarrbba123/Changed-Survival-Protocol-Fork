@@ -194,7 +194,7 @@ public final class CSPPlayerEvents {
                 }
 
                 if (data.getInfectionPercent() < 100.0D && !suppressedThisTick && player.tickCount % CSPConfig.COMMON.infectionGrowthIntervalTicks.get() == 0) {
-                    data.addInfection(CSPConfig.COMMON.infectionGrowthPerInterval.get());
+                    data.addInfection(CSPConfig.COMMON.infectionGrowthPerInterval.get(), "");
                     dirty = true;
                 }
 

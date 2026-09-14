@@ -6,6 +6,10 @@ public class CSPPlayerInfectionEntry {
     private double infection = 0D;
     private double coverage = 0D;
 
+    private static double clampPercent(double rawPercent) {
+        return Math.min(Math.max(rawPercent, 0.0D), 100.0D);
+    }
+
     public CSPPlayerInfectionEntry() {}
 
     // Convinience constructor used to load directly from a save
@@ -14,21 +18,31 @@ public class CSPPlayerInfectionEntry {
     }
     
     public void setInfectionPercent(double infection) {
-        this.infection = infection;
+        this.infection = clampPercent(infection);
     }
 
     public void setCoveragePercent(double coverage) {
-        this.coverage = coverage;
+        this.coverage = clampPercent(coverage);
+    }
+
+    private static double percentCalc(double value, double added, double total, boolean isAdded) {
+        double currentPrescense = total * (value / 100);
+        if (isAdded) {
+            currentPrescense += added;
+        }
+        currentPrescense /= total + added;
+
+        return currentPrescense * 100.0D; // Convert back to percentage
     }
 
     // Convinience function to update infection percentage
     // totalInfection is the total infection BEFORE adding added infection
     public void updateInfectionPercentage(double addedInfection, double totalInfection, boolean isAddedStrain) {
-
+        infection = percentCalc(infection, addedInfection, totalInfection, isAddedStrain);
     }
 
     public void updateCoveragePercentage(double addedCoverage, double totalCoverage, boolean isAddedStrain) {
-
+        coverage = percentCalc(coverage, addedCoverage, totalCoverage, isAddedStrain);
     }
 
     public double getInfectionScore(double coverageBonus, boolean infected) {

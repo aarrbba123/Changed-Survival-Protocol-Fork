@@ -18,7 +18,7 @@ public record SyncCSPPlayerDataPacket(double infectionPercent,
                 data.getInfectionPercent(),
                 data.getCoverage(),
                 data.isInfected(),
-                data.getStrainId(),
+                data.getActiveStrainId(),
                 data.getLucidity(),
                 data.isLucidityActive());
     }
