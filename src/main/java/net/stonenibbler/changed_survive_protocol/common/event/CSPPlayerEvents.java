@@ -185,6 +185,8 @@ public final class CSPPlayerEvents {
             } else if (!data.isInfected() && data.getCoverage() > 0.0D && player.tickCount % CSPConfig.COMMON.passiveCoverageDecayIntervalTicks.get() == 0) {
                 data.setCoverage(data.getCoverage() - CSPConfig.COMMON.passiveCoverageDecayAmount.get());
                 dirty = true;
+            } else if (!data.isInfected() && data.getCoverage() <= 0.0D) {
+                data.cleanupInfectionMap();
             }
 
             if (data.isInfected()) {

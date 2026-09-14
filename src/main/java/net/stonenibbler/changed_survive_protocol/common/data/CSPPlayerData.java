@@ -437,6 +437,32 @@ public class CSPPlayerData {
         collapseCount++;
     }
 
+    public Map<String, CSPPlayerInfectionEntry> getInfectionMap() {
+        return strainIds;
+    }
+
+    public void cleanupInfectionMap() {
+        if (strainIds.isEmpty()) return;
+
+        if (coverage == 0 && infectionPercent == 0) {
+            strainIds.clear();
+            return;
+        }
+
+        // Precise entry cleaner
+        Iterator<Map.Entry<String, CSPPlayerInfectionEntry>> iter = strainIds.entrySet().iterator();
+
+        while (iter.hasNext()) {
+            Map.Entry<String, CSPPlayerInfectionEntry> mapEntry = iter.next();
+            CSPPlayerInfectionEntry entry = mapEntry.getValue();
+            String strainId = mapEntry.getKey();
+
+            if (entry.getCoveragePercent() == 0 && entry.getInfectionPercent() == 0) {
+                strainIds.remove(strainId);
+            }
+        }
+    }
+
     private static double clampPercent(double value) {
         if (Double.isNaN(value)) {
             return 0.0D;
