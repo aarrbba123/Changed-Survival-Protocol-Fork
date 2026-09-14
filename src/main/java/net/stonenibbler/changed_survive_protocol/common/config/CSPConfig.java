@@ -44,6 +44,7 @@ public final class CSPConfig {
         public final ForgeConfigSpec.IntValue infectionGrowthIntervalTicks;
         public final ForgeConfigSpec.DoubleValue infectionGrowthPerInterval;
         public final ForgeConfigSpec.DoubleValue infectionFromExtraCoverageMultiplier;
+        public final ForgeConfigSpec.DoubleValue coverageBonusMultiplier;
 
         public final ForgeConfigSpec.DoubleValue disinfectantWipeCoverageRemoval;
         public final ForgeConfigSpec.DoubleValue disinfectantSprayCoverageRemoval;
@@ -99,6 +100,7 @@ public final class CSPConfig {
             passiveCoverageDecayAmount = builder.comment("Coverage removed on each passive decay tick.").defineInRange("passiveCoverageDecayAmount", 0.05D, 0.0D, 100.0D);
             coverageInfectionThreshold = builder.comment("Coverage required to begin infection. Default is 100: fully coated means infected.").defineInRange("coverageInfectionThreshold", 100.0D, 1.0D, 100.0D);
             infectionStartPercent = builder.comment("Infection percent assigned when coverage reaches the infection threshold.").defineInRange("infectionStartPercent", 1.0D, 1.0D, 100.0D);
+            coverageBonusMultiplier = builder.comment("When infected and hit by another latex of a different species, how much does coverage affect infection types. A higher number means that it takes more hits to override an existing infection").defineInRange("coverageBonusMultiplier", 0.35D, 0.0D, 2.0D);
             builder.pop();
 
             builder.push("infection");

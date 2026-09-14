@@ -1,15 +1,21 @@
 package net.stonenibbler.changed_survive_protocol.common.data;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.stonenibbler.changed_survive_protocol.common.config.CSPConfig;
 import net.minecraft.core.BlockPos;
 
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class CSPPlayerData {
     private double infectionPercent;
     private double coverage;
     private boolean infected;
-    private String strainId = "";
+    private Map<String, CSPPlayerInfectionEntry> strainIds = new HashMap<>();
     private int suppressantTicks;
     private double lucidity = 100.0D;
     private boolean lucidityActive;
@@ -24,11 +30,24 @@ public class CSPPlayerData {
     private BlockPos feralSelfPos;
     private int collapseCount;
 
+    // Helper function to get absolute strain id
+    // Either to convert to the new format, or to set strain
+    private CSPPlayerInfectionEntry getAbsoluteStrain() {
+        CSPPlayerInfectionEntry entry = new CSPPlayerInfectionEntry();
+        entry.setCoveragePercent(100D);
+        if (infected) {
+            entry.setInfectionPercent(100D);
+        }
+
+        return entry;
+    }
+
     public void copyFrom(CSPPlayerData other) {
         infectionPercent = other.infectionPercent;
         coverage = other.coverage;
         infected = other.infected;
-        strainId = other.strainId;
+        strainIds = new HashMap<>();
+        strainIds.putAll(other.strainIds); // Clone now doesn't exist. huh.
         suppressantTicks = other.suppressantTicks;
         lucidity = other.lucidity;
         lucidityActive = other.lucidityActive;
@@ -48,7 +67,7 @@ public class CSPPlayerData {
         infectionPercent = 0.0D;
         coverage = 0.0D;
         infected = false;
-        strainId = "";
+        strainIds.clear();
         suppressantTicks = 0;
         lucidity = 100.0D;
         lucidityActive = false;
@@ -64,12 +83,25 @@ public class CSPPlayerData {
         collapseCount = 0;
     }
 
+    private ListTag saveStrainIds() {
+        ListTag tag = new ListTag();
+        for (HashMap.Entry<String, CSPPlayerInfectionEntry> entry : strainIds.entrySet()) {
+            CompoundTag ctag = entry.getValue().save();
+            ctag.putString("strainId", entry.getKey());
+            
+            tag.add(ctag);
+        }
+
+        return tag;
+    }
+
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
         tag.putDouble("infectionPercent", infectionPercent);
         tag.putDouble("coverage", coverage);
         tag.putBoolean("infected", infected);
-        tag.putString("strainId", strainId);
+        tag.put("strainIds", saveStrainIds());
+        tag.putString("strainId", getStrainId()); // In case of reversion, we just place the active strain id here, too.
         tag.putInt("suppressantTicks", suppressantTicks);
         tag.putDouble("lucidity", lucidity);
         tag.putBoolean("lucidityActive", lucidityActive);
@@ -78,6 +110,7 @@ public class CSPPlayerData {
         tag.putInt("unstableLatexTicks", unstableLatexTicks);
         tag.putDouble("lucidityDrainMultiplier", lucidityDrainMultiplier);
         tag.putString("settledStrainId", settledStrainId);
+
         if (!totemFormId.isBlank()) {
             tag.putString("totemFormId", totemFormId);
         }
@@ -94,11 +127,41 @@ public class CSPPlayerData {
         return tag;
     }
 
+    private Map<String, CSPPlayerInfectionEntry> convertToNewStrainId(String activeStrainId) {
+        Map<String, CSPPlayerInfectionEntry> newMap = new HashMap<>();
+        if (activeStrainId == "") {
+            return newMap;
+        }
+
+        CSPPlayerInfectionEntry entry = getAbsoluteStrain();
+
+        newMap.put(activeStrainId, entry);
+        return newMap;
+    }
+
+    private Map<String, CSPPlayerInfectionEntry> loadStrainIds(ListTag strainIdTag) {
+        Map<String, CSPPlayerInfectionEntry> newMap = new HashMap<>();
+        if (strainIdTag.isEmpty()) {
+            return newMap;
+        }
+        
+        Iterator<Tag> iter = strainIdTag.iterator();
+        while (iter.hasNext()) {
+            CompoundTag tag = (CompoundTag) iter.next();
+            String strain = tag.getString("strainId");
+            CSPPlayerInfectionEntry entry = new CSPPlayerInfectionEntry(tag);
+
+            newMap.put(strain, entry);
+        }
+
+        return newMap;
+    }
+
     public void load(CompoundTag tag) {
         infectionPercent = clampPercent(tag.getDouble("infectionPercent"));
         coverage = clampPercent(tag.getDouble("coverage"));
         infected = infectionPercent > 0.0D;
-        strainId = tag.getString("strainId");
+        strainIds = tag.contains("strainIds") ? loadStrainIds(tag.getList("strainIds", CompoundTag.TAG_COMPOUND)) : convertToNewStrainId(tag.getString("strainId"));
         suppressantTicks = Math.max(0, tag.getInt("suppressantTicks"));
         lucidity = tag.contains("lucidity") ? clampPercent(tag.getDouble("lucidity")) : 100.0D;
         lucidityActive = tag.getBoolean("lucidityActive");
@@ -112,6 +175,7 @@ public class CSPPlayerData {
         feralSelfDimension = tag.getString("feralSelfDimension");
         feralSelfPos = tag.contains("feralSelfPos") ? BlockPos.of(tag.getLong("feralSelfPos")) : null;
         collapseCount = Math.max(0, tag.getInt("collapseCount"));
+        
     }
 
     public double getInfectionPercent() {
@@ -126,12 +190,22 @@ public class CSPPlayerData {
     public void clearInfection() {
         infectionPercent = 0.0D;
         infected = false;
-        strainId = "";
+        strainIds.clear();
         suppressantTicks = 0;
     }
 
+    @Deprecated
     public void addInfection(double amount) {
         setInfectionPercent(infectionPercent + amount);
+    }
+
+    public void addInfection(double amount, String strainId) {
+        setInfectionPercent(infectionPercent + amount);
+        if (strainId.isBlank()) return;
+        // TODO: Infection handling
+        if (!strainIds.containsKey(strainId)) {
+
+        }
     }
 
     public double getCoverage() {
@@ -146,8 +220,15 @@ public class CSPPlayerData {
         coverage = 0.0D;
     }
 
+    @Deprecated 
     public void addCoverage(double amount) {
         setCoverage(coverage + amount);
+    }
+
+    public void addCoverage(double amount, String strainId) {
+        setCoverage(coverage + amount);
+        if (strainId.isBlank()) return;
+        // TODO: Coverage handling
     }
 
     public boolean isInfected() {
@@ -163,12 +244,42 @@ public class CSPPlayerData {
         }
     }
 
-    public String getStrainId() {
-        return strainId;
+    public String getActiveStrainId() {
+        // Get strain id now gets the active strain id
+        String activeStrain = "";
+        double highestScore = 0D;
+        if (strainIds.isEmpty()) 
+            return "";
+
+        for (Map.Entry<String, CSPPlayerInfectionEntry> entry : strainIds.entrySet()) {
+            CSPPlayerInfectionEntry infectionEntry = entry.getValue();
+            double infectionScore = infectionEntry.getInfectionScore(CSPConfig.COMMON.coverageBonusMultiplier.get(), infected);
+            if (infectionScore > highestScore) {
+                highestScore = infectionScore;
+                activeStrain = entry.getKey();
+            }
+        }
+
+        return activeStrain;
     }
 
+    @Deprecated 
+    public String getStrainId() {
+        return this.getActiveStrainId();
+    }
+
+    public void setActiveStrainId(String strainId) {
+        // Replace the whole tf table with the active strain
+        strainIds.clear();
+        if (strainId == null)
+            return;
+
+        strainIds.put(strainId, getAbsoluteStrain());
+    }
+
+    @Deprecated
     public void setStrainId(String strainId) {
-        this.strainId = strainId == null ? "" : strainId;
+        this.setActiveStrainId(strainId);
     }
 
     public int getSuppressantTicks() {

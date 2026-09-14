@@ -465,7 +465,7 @@ public final class CSPTransfurEvents {
     }
 
     private static void ensureSettledState(ServerPlayer player, CSPPlayerData data) {
-        data.setStrainId(data.getSettledStrainId());
+        data.setActiveStrainId(data.getSettledStrainId());
         data.setCoverage(0.0D);
         data.setInfected(false);
         data.setSuppressantTicks(0);
